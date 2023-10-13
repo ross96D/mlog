@@ -1,0 +1,1 @@
+Paquete para logs estructurados
