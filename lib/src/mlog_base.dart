@@ -24,7 +24,7 @@ String? mlogGetMessage(LgLvl level, Object? msg, {
   StackTrace? st,
   int extraTraceLineOffset = 0,
 }) {
-  if (level.value>=LogOptions.instance.getLvlForType(type).value) {
+  if (level.value>LogOptions.instance.getLvlForType(type).value) {
     return null;
   }
   msg ??= "";
