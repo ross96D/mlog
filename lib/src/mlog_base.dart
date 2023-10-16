@@ -29,10 +29,11 @@ String? mlogGetMessage(LgLvl level, Object? msg, {
   }
   msg ??= "";
   StringBuffer messageBuilder = StringBuffer('');
-  String header = "$level ${DateTime.now()}";
+  String header = "$level";
   if (type!=null) {
     header += ' $type';
   }
+  header += ' ${DateTime.now()}';
   messageBuilder.write(switch (level) {
     LgLvl.error => _Color.red.paint(header),
     LgLvl.warning => _Color.orange.paint(header),
@@ -56,7 +57,6 @@ String? mlogGetMessage(LgLvl level, Object? msg, {
   if (st != null) {
     messageBuilder.write("\nStackTrace:\n$st");
   }
-  messageBuilder.write('$_etbChar\n');
   String message = messageBuilder.toString();
   bool isFirstLine = true;
   message = message.splitMapJoin('\n', onNonMatch: (e) {
@@ -67,6 +67,7 @@ String? mlogGetMessage(LgLvl level, Object? msg, {
       return '    $e';
     }
   },);
+  message += '$_etbChar\n';
   return message;
 }
 
