@@ -1,3 +1,4 @@
+import 'package:mlog/mlog.dart';
 import 'package:mlog/src/colors.dart' as dcli;
 
 
@@ -27,21 +28,16 @@ String? mlogGetMessage(LgLvl level, Object? msg, {
   if (level.value>LogOptions.instance.getLvlForType(type).value) {
     return null;
   }
+  if (e is NestedError) st = e.originalStackTrace;
   msg ??= "";
   StringBuffer messageBuilder = StringBuffer('');
+  final color = level._color;
   String header = "$level";
   if (type!=null) {
     header += ' $type';
   }
   header += ' ${DateTime.now()}';
-  messageBuilder.write(switch (level) {
-    LgLvl.error => _Color.red.paint(header),
-    LgLvl.warning => _Color.orange.paint(header),
-    LgLvl.info => _Color.green.paint(header),
-    LgLvl.fine => _Color.blue.paint(header),
-    LgLvl.finer => _Color.blue.paint(header),
-    LgLvl.no => throw Exception('LgLvl.no is never meant to be painted'),
-  },);
+  messageBuilder.write(color.paint(header));
   if (LogOptions.instance.trace) {
     try {
       var trace = _parseTrace(StackTrace.current, extraTraceLineOffset: extraTraceLineOffset);
@@ -52,7 +48,7 @@ String? mlogGetMessage(LgLvl level, Object? msg, {
   }
   messageBuilder.write("\n$msg");
   if (e != null) {
-    messageBuilder.write(_Color.red.paint("\nError: $e"));
+    messageBuilder.write(color.paint("\nError: $e"));
   }
   if (st != null) {
     messageBuilder.write("\nStackTrace:\n$st");
@@ -119,6 +115,15 @@ enum LgLvl {
     }
     throw ArgumentError("String not matching", "s");
   }
+
+  _Color get _color => switch (this) {
+    LgLvl.error => _Color.red,
+    LgLvl.warning => _Color.orange,
+    LgLvl.info => _Color.green,
+    LgLvl.fine => _Color.blue,
+    LgLvl.finer => _Color.blue,
+    LgLvl.no => throw Exception('LgLvl.no is never meant to be painted'),
+  };
 }
 
 
