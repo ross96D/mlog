@@ -129,7 +129,7 @@ class LogOptions {
     });
   }
 
-  final MessageBuilder builder = ReadableMessageBuilder();
+  MessageBuilder builder = ReadableMessageBuilder();
 
   LgLvl getLvlForType(Object? type) {
     return types[type] ?? level;
