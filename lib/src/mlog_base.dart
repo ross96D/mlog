@@ -1,4 +1,4 @@
-import 'package:mlog/src/common/colors.dart' as dcli;
+import 'package:mlog/src/common/colors.dart';
 import 'package:mlog/src/message_builder/message_builder.dart';
 import 'package:mlog/src/message_builder/readable.dart';
 
@@ -23,29 +23,6 @@ void mlog(LgLvl level, Object? msg, {
     print(message); // ignore: avoid_print
   }
 }
-
-enum Color {
-  red,
-  green,
-  blue,
-  orange,
-  grey;
-
-  String paint(String text) {
-    if (LogOptions.instance.paint) {
-      return switch (this) {
-        Color.red => dcli.red(text, bold: false),
-        Color.green => dcli.green(text, bold: false),
-        Color.blue => dcli.blue(text, bold: false),
-        Color.orange => dcli.orange(text, bold: false),
-        Color.grey => dcli.grey(text, bold: false),
-      };
-    } else {
-      return text;
-    }
-  }
-}
-
 
 enum LgLvl {
   error   (0, 'error',    '[E]'),

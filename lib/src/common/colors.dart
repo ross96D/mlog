@@ -1,3 +1,5 @@
+import 'package:mlog/src/common/colors.dart' as dcli;
+import 'package:mlog/src/mlog_base.dart';
 
 // copied from dcli :)
 
@@ -538,4 +540,27 @@ class Ansi {
   /// characters in a message.
   static String strip(String line) =>
       line.replaceAll(RegExp('\x1b\\[[0-9;]+m'), '');
+}
+
+
+enum Color {
+  red,
+  green,
+  blue,
+  orange,
+  grey;
+
+  String paint(String text) {
+    if (LogOptions.instance.paint) {
+      return switch (this) {
+        Color.red => dcli.red(text, bold: false),
+        Color.green => dcli.green(text, bold: false),
+        Color.blue => dcli.blue(text, bold: false),
+        Color.orange => dcli.orange(text, bold: false),
+        Color.grey => dcli.grey(text, bold: false),
+      };
+    } else {
+      return text;
+    }
+  }
 }

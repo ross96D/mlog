@@ -1,3 +1,4 @@
+import 'package:mlog/src/common/colors.dart';
 import 'package:mlog/src/message_builder/message_builder.dart';
 import 'package:mlog/src/mlog_base.dart';
 import 'package:mlog/src/nested_error.dart';
