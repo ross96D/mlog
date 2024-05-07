@@ -32,6 +32,10 @@ class JsonMessageBuilder implements MessageBuilder {
       }
     }
 
+    if (msg != null) {
+      map["message"] = msg;
+    }
+
     if (e != null) {
       map["error"] = "$e";
     }
