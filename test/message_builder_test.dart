@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:mlog/mlog.dart';
-import 'package:mlog/src/message_builder/json.dart';
 import 'package:test/test.dart';
 
 void main() {
