@@ -493,6 +493,7 @@ class Ansi {
   const Ansi._internal();
 
   static const _self = Ansi._internal();
+  // ignore: unused_field
   static bool? _emitAnsi;
 
   /// returns true if stdout supports ansi escape characters.

@@ -1,5 +1,6 @@
-import 'package:mlog/mlog.dart';
-import 'package:mlog/src/colors.dart' as dcli;
+import 'package:mlog/src/common/colors.dart' as dcli;
+import 'package:mlog/src/message_builder/message_builder.dart';
+import 'package:mlog/src/message_builder/readable.dart';
 
 
 void mlog(LgLvl level, Object? msg, {
@@ -8,7 +9,11 @@ void mlog(LgLvl level, Object? msg, {
   StackTrace? st,
   int extraTraceLineOffset = 0,
 }) {
-  final message = mlogGetMessage(level, msg,
+  if (level.value > LogOptions.instance.getLvlForType(type).value) {
+      return;
+  }
+
+  final message = LogOptions.instance.builder.messageBuilder(level, msg,
     type: type,
     e: e,
     st: st,
@@ -19,55 +24,7 @@ void mlog(LgLvl level, Object? msg, {
   }
 }
 
-String? mlogGetMessage(LgLvl level, Object? msg, {
-  Object? type,
-  Object? e,
-  StackTrace? st,
-  int extraTraceLineOffset = 0,
-}) {
-  if (level.value>LogOptions.instance.getLvlForType(type).value) {
-    return null;
-  }
-  if (e is NestedError) st = e.originalStackTrace;
-  msg ??= "";
-  StringBuffer messageBuilder = StringBuffer('');
-  final color = level._color;
-  String header = "$level";
-  if (type!=null) {
-    header += ' $type';
-  }
-  header += ' ${DateTime.now()}';
-  messageBuilder.write(color.paint(header));
-  if (LogOptions.instance.trace) {
-    try {
-      var trace = _parseTrace(StackTrace.current, extraTraceLineOffset: extraTraceLineOffset);
-      messageBuilder.write(_Color.grey.paint(" - ${trace.$1} ${trace.$2}:${trace.$3}"));
-    } catch(_) {
-      messageBuilder.write(_Color.grey.paint(" - TRACE ERROR"));
-    }
-  }
-  messageBuilder.write("\n$msg");
-  if (e != null) {
-    messageBuilder.write(color.paint("\nError: $e"));
-  }
-  if (st != null) {
-    messageBuilder.write("\nStackTrace:\n$st");
-  }
-  String message = messageBuilder.toString();
-  bool isFirstLine = true;
-  message = message.splitMapJoin('\n', onNonMatch: (e) {
-    if (isFirstLine) {
-      isFirstLine = false;
-      return e;
-    } else {
-      return '    $e';
-    }
-  },);
-  message += '$_etbChar\n';
-  return message;
-}
-
-enum _Color {
+enum Color {
   red,
   green,
   blue,
@@ -77,11 +34,11 @@ enum _Color {
   String paint(String text) {
     if (LogOptions.instance.paint) {
       return switch (this) {
-        _Color.red => dcli.red(text, bold: false),
-        _Color.green => dcli.green(text, bold: false),
-        _Color.blue => dcli.blue(text, bold: false),
-        _Color.orange => dcli.orange(text, bold: false),
-        _Color.grey => dcli.grey(text, bold: false),
+        Color.red => dcli.red(text, bold: false),
+        Color.green => dcli.green(text, bold: false),
+        Color.blue => dcli.blue(text, bold: false),
+        Color.orange => dcli.orange(text, bold: false),
+        Color.grey => dcli.grey(text, bold: false),
       };
     } else {
       return text;
@@ -116,19 +73,18 @@ enum LgLvl {
     throw ArgumentError("String not matching", "s");
   }
 
-  _Color get _color => switch (this) {
-    LgLvl.error => _Color.red,
-    LgLvl.warning => _Color.orange,
-    LgLvl.info => _Color.green,
-    LgLvl.fine => _Color.blue,
-    LgLvl.finer => _Color.blue,
+  Color get color => switch (this) {
+    LgLvl.error => Color.red,
+    LgLvl.warning => Color.orange,
+    LgLvl.info => Color.green,
+    LgLvl.fine => Color.blue,
+    LgLvl.finer => Color.blue,
     LgLvl.no => throw Exception('LgLvl.no is never meant to be painted'),
   };
 }
 
 
 class LogOptions {
-
   static LogOptions? _instance;
   static LogOptions get instance {
     _instance ??= LogOptions._internal();
@@ -173,42 +129,9 @@ class LogOptions {
     });
   }
 
+  final MessageBuilder builder = ReadableMessageBuilder();
+
   LgLvl getLvlForType(Object? type) {
     return types[type] ?? level;
   }
-
-}
-
-/// regex to locate file name
-final _rgx = RegExp(r'[\w,_,-,\.]+.dart');
-/// end of block char to denote the end of the log message
-final _etbChar = String.fromCharCode(23);
-
-(String fn, String file, int line) _parseTrace(StackTrace st, {
-  int extraTraceLineOffset = 0,
-}) {
-  var frames = st.toString().split("\n");
-  final frameIndex = 1 + LogOptions.instance.relevantStackTraceLineOffset + extraTraceLineOffset;
-  if (frames.length <= frameIndex) {
-    return ("", "", 0);
-  }
-  String functionName = _getFunctionNameFromFrame(frames[frameIndex]);
-  var traceString = frames[frameIndex];
-  var indexOfFileName = traceString.indexOf(_rgx);
-  var fileInfo = traceString.substring(indexOfFileName);
-  var listOfInfos = fileInfo.split(":");
-  String fileName = listOfInfos[0];
-  int lineNumber = int.tryParse(listOfInfos[1]) ?? -1;
-  return (functionName, fileName, lineNumber);
-}
-
-String _getFunctionNameFromFrame(String frame) {
-  var currentTrace = frame;
-  var indexOfWhiteSpace = currentTrace.indexOf(' ');
-  var subStr = currentTrace.substring(indexOfWhiteSpace);
-  var indexOfFunction = subStr.indexOf(RegExp(r'[A-Za-z0-9]'));
-  subStr = subStr.substring(indexOfFunction);
-  indexOfWhiteSpace = subStr.indexOf(' ');
-  subStr = subStr.substring(0, indexOfWhiteSpace);
-  return subStr;
 }
