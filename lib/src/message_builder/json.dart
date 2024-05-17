@@ -33,7 +33,13 @@ class JsonMessageBuilder implements MessageBuilder {
     }
 
     if (msg != null) {
-      map["message"] = msg;
+      if (msg is Map<String, dynamic>) {
+        map.addAll(msg);
+      } if (msg is String) {
+        map["message"] = msg;
+      } else {
+        map["message"] = "$msg";
+      }
     }
 
     if (e != null) {
