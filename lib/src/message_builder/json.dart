@@ -18,38 +18,56 @@ class JsonMessageBuilder implements MessageBuilder {
     
     map["level"] = level.name;
     map["time"] = DateTime.now().toString();
+    map["type"] = "$type";
+    
+    map["data"] = <String, dynamic>{};
+    final data = map["data"] as Map<String, dynamic>;
 
     if (LogOptions.instance.trace) {
       try {
-        final trace = parseTrace(StackTrace.current, extraTraceLineOffset: extraTraceLineOffset);
-        map["trace"] = {
-          "function": trace.$1,
-          "file": trace.$2,
-          "line": trace.$3,
+        final (function, file, line) = parseTrace(StackTrace.current, extraTraceLineOffset: extraTraceLineOffset);
+        data["trace"] = {
+          "function": function,
+          "file": file,
+          "line": line,
         };
-      } catch (_) {
-        map["trace"] = "TRACE ERROR";
+      } catch (e) {
+        data["trace"] = "parse trace error $e";
       }
     }
 
     if (msg != null) {
       if (msg is Map<String, dynamic>) {
-        map.addAll(msg);
+        map["message"] = _logfmt(msg);
+        data.addAll(msg);
       } else if (msg is String) {
         map["message"] = msg;
-      } else {
+      }
+      else {
         map["message"] = "$msg";
       }
     }
 
     if (e != null) {
-      map["error"] = "$e";
+      data["error"] = "$e";
     }
 
     if (st != null) {
-      map["stacktrace"] = "$st";
+      data["stacktrace"] = "$st";
     }
 
     return json.encode(map);
   }
+}
+
+String _logfmt(Map<String, dynamic> data) {
+  final builder = StringBuffer();
+
+  for (var entry in data.entries) {
+    builder.write("${entry.key}=${entry.value.toString()}");
+    builder.write(" ");
+  }
+
+  final result = builder.toString();
+  return result.substring(0, result.length - 1);
 }
