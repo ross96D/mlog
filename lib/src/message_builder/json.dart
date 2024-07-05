@@ -37,7 +37,10 @@ class JsonMessageBuilder implements MessageBuilder {
     }
 
     if (msg != null) {
-      if (msg is Map<String, dynamic>) {
+      if (msg is JsonMessage) {
+        map["message"] = msg.toString();
+        data.addAll(msg.toMap());
+      } else if (msg is Map<String, dynamic>) {
         map["message"] = _logfmt(msg);
         data.addAll(msg);
       } else if (msg is String) {
@@ -70,4 +73,31 @@ String _logfmt(Map<String, dynamic> data) {
 
   final result = builder.toString();
   return result.substring(0, result.length - 1);
+}
+
+abstract class JsonMessage {
+
+  factory JsonMessage({required String message, required Map<String,dynamic> map}) => _ImplJsonMessage(message, map);
+
+  @override
+  String toString();
+
+  Map<String, dynamic> toMap();
+}
+
+class _ImplJsonMessage implements JsonMessage {
+  final String message;
+  final Map<String, dynamic> map;
+  
+  _ImplJsonMessage(this.message, this.map);
+  
+  @override
+  Map<String, dynamic> toMap() {
+    return map;
+  }
+
+  @override
+  String toString() {
+    return message;
+  }
 }
