@@ -8,7 +8,7 @@ final _etbChar = String.fromCharCode(23);
 
 class ReadableMessageBuilder implements MessageBuilder {
   @override
-  String? messageBuilder(LgLvl level, Object? msg, {
+  String messageBuilder(LgLvl level, Object? msg, {
     Object? type,
     Object? e,
     StackTrace? st,

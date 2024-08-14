@@ -19,9 +19,7 @@ void mlog(LgLvl level, Object? msg, {
     st: st,
     extraTraceLineOffset: extraTraceLineOffset + 1,
   );
-  if (message!=null) {
-    print(message); // ignore: avoid_print
-  }
+  print(message); // ignore: avoid_print
 }
 
 enum LgLvl {

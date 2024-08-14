@@ -7,7 +7,7 @@ import 'package:mlog/src/mlog_base.dart';
 
 class JsonMessageBuilder implements MessageBuilder {
   @override
-  String? messageBuilder(LgLvl level, Object? msg, {
+  String messageBuilder(LgLvl level, Object? msg, {
     Object? type,
     Object? e,
     StackTrace? st,
