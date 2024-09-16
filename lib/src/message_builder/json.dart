@@ -6,6 +6,7 @@ import 'package:mlog/src/message_builder/message_builder.dart';
 import 'package:mlog/src/mlog_base.dart';
 
 class JsonMessageBuilder implements MessageBuilder {
+
   @override
   String messageBuilder(LgLvl level, Object? msg, {
     Object? type,
@@ -13,13 +14,28 @@ class JsonMessageBuilder implements MessageBuilder {
     StackTrace? st,
     int extraTraceLineOffset = 0,
   }) {
+    final map = mapBuilder(level, msg,
+      type: type,
+      e: e,
+      st: st,
+      extraTraceLineOffset: 0,
+    );
+    return json.encode(map);
+  }
+
+  LinkedHashMap<String, dynamic> mapBuilder(LgLvl level, Object? msg, {
+    Object? type,
+    Object? e,
+    StackTrace? st,
+    int extraTraceLineOffset = 0,
+  }) {
     // ignore: prefer_collection_literals
     final map = LinkedHashMap<String, dynamic>();
-    
+
     map["level"] = level.name;
     map["time"] = DateTime.now().toString();
     map["type"] = "$type";
-    
+
     map["data"] = <String, dynamic>{};
     final data = map["data"] as Map<String, dynamic>;
 
@@ -59,8 +75,9 @@ class JsonMessageBuilder implements MessageBuilder {
       data["stacktrace"] = "$st";
     }
 
-    return json.encode(map);
+    return map;
   }
+
 }
 
 String _logfmt(Map<String, dynamic> data) {
