@@ -1,3 +1,10 @@
 {
-    "CodeGPT.apiKey": "Ollama"
+    "[dart]": {
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": false,
+        "editor.detectIndentation": false,
+        "editor.indentSize": "tabSize",
+    },
+    "dart.enableSdkFormatter": false
 }
