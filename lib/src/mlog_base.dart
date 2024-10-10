@@ -1,27 +1,84 @@
 import 'package:mlog/src/common/colors.dart';
 import 'package:mlog/src/message_builder/message_builder.dart';
 import 'package:mlog/src/message_builder/readable.dart';
+import 'package:mlog/src/nested_error.dart';
 
 
-void mlog(LgLvl level, String? msg, Object? extra, {
+class LogBuilder {
+	final Map<String, String> _fields;
+	LgLvl level;
+	LogBuilder(this.level) :_fields = {};
+
+	factory LogBuilder.msg(LgLvl level, String msg) {
+		return LogBuilder(level).msg(msg);
+	}
+
+	LogBuilder msg(String msg) {
+		_fields["message"] = msg;
+		return this;
+	}
+
+	LogBuilder set(String key, Object value) {
+		_fields[key] = "$value";
+		return this;
+	}
+
+	LogBuilder type(Object type) {
+		_fields["type"] = "$type";
+		return this;
+	}
+
+	LogBuilder add(Map<String, dynamic> map) {
+		for (var e in map.entries) {
+			_fields[e.key] = "${e.value}";
+		}
+		return this;
+	}
+
+	LogBuilder error(Object error, [StackTrace? st]) {
+		if (error is NestedError) {
+			st = error.originalStackTrace;
+		}
+		_fields["error"] = "Error: $error\nStacktrace:\n$st";
+		return this;
+	}
+}
+
+String messageBuilder(LogBuilder logBuilder, MessageBuilder msgBuilder, [int traceOffset = 0]) {
+	return msgBuilder.messageBuilder(
+		logBuilder.level,
+		DateTime.now(),
+		LoggingFields(logBuilder._fields),
+		traceOffset + 1,
+	);
+}
+
+void log(LogBuilder builder, [int traceOffset = 0]) {
+	final message = LogOptions.instance.builder.messageBuilder(
+		builder.level,
+		DateTime.now(),
+		LoggingFields(builder._fields),
+		traceOffset + 1,
+	);
+	print(message); // ignore: avoid_print
+}
+
+
+void mlog(LgLvl level, String? msg, {
 	Object? type,
 	Object? e,
 	StackTrace? st,
 	int extraTraceLineOffset = 0,
 }) {
 	if (level.value > LogOptions.instance.getLvlForType(type).value) {
-			return;
+		return;
 	}
+	var builder = LogBuilder(level);
+	if (msg != null) builder = builder.msg(msg);
+	if (type != null) builder = builder.type(type);
+	if (e != null) builder = builder.error(e, st);
 
-	final message = LogOptions.instance.builder.messageBuilder(level, msg, extra,
-		type: type,
-		e: e,
-		st: st,
-		extraTraceLineOffset: extraTraceLineOffset + 1,
-	);
-	if (message!=null) {
-		print(message); // ignore: avoid_print
-	}
+	log(builder, extraTraceLineOffset + 1);
 }
 
 enum LgLvl {
@@ -89,8 +146,12 @@ class LogOptions {
 	bool get isAddLevelSafe => !_calledLevel;
 	bool _calledLevel = false;
 	void setLevel(LgLvl level) {
-		if (_calledLevel) throw Exception('Trying to add options twice to the same LogOptions instance');
-		if (level==LgLvl.no) throw ArgumentError('LgLvl.no cannot be set as the expected level output, it is only ment to turn off a specific type');
+		if (_calledLevel) {
+			throw Exception('Trying to add options twice to the same LogOptions instance');
+		}
+		if (level==LgLvl.no) { 
+			throw ArgumentError('LgLvl.no cannot be set as the expected level output, it is only ment to turn off a specific type');
+		}
 		_calledLevel = true;
 		_level = level;
 	}
@@ -98,7 +159,9 @@ class LogOptions {
 	bool get isAddTypesSafe => !_calledTypes;
 	bool _calledTypes = false;
 	void addTypes(Map<Object, LgLvl?> types) {
-		if (_calledTypes) throw Exception('Trying to add options twice to the same LogOptions instance');
+		if (_calledTypes) {
+			throw Exception('Trying to add options twice to the same LogOptions instance');
+		}
 		_calledTypes = true;
 		_types = Map.unmodifiable({
 			..._types,
