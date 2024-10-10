@@ -6,5 +6,12 @@
         "editor.detectIndentation": false,
         "editor.indentSize": "tabSize",
     },
-    "dart.enableSdkFormatter": false
+    "dart.enableSdkFormatter": false,
+    "editor.semanticTokenColorCustomizations": {
+        "[Default Dark Modern]": {
+            "rules": {
+                "keyword": "#6da2f7",
+            },
+        },
+    },
 }
