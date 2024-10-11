@@ -31,7 +31,7 @@ void main() {
 			final msg = getRandomString(random, 50);
 			final type = getRandomString(random, 12);
 			final num = random.nextInt(10000);
-			log(LogBuilder(level).
+			blog(LogBuilder(level).
 				msg(msg).
 				type(type).
 				add({"num": num})
@@ -61,5 +61,5 @@ void Function() overridePrint(int seed, void Function() testFn) {
 
 const _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
 
-String getRandomString(Random _rnd, int length) => String.fromCharCodes(Iterable.generate(
-    length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+String getRandomString(Random rnd, int length) => String.fromCharCodes(Iterable.generate(
+    length, (_) => _chars.codeUnitAt(rnd.nextInt(_chars.length))));

@@ -32,7 +32,7 @@ class ReadableMessageBuilder implements MessageBuilder {
 		messageBuilder.write("\n${data.message() ?? ""}");
 		final e = data.error();
 		if (e != null) {
-			messageBuilder.write(color.paint(e));
+			messageBuilder.write(color.paint("\n$e"));
 		}
 		String message = messageBuilder.toString();
 		bool isFirstLine = true;

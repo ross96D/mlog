@@ -13,7 +13,10 @@ class LogBuilder {
 		return LogBuilder(level).msg(msg);
 	}
 
-	LogBuilder msg(String msg) {
+	LogBuilder msg(String? msg) {
+		if (msg == null) {
+			return this;
+		}
 		_fields["message"] = msg;
 		return this;
 	}
@@ -23,12 +26,18 @@ class LogBuilder {
 		return this;
 	}
 
-	LogBuilder type(Object type) {
+	LogBuilder type(Object? type) {
+		if (type == null) {
+			return this;
+		}
 		_fields["type"] = "$type";
 		return this;
 	}
 
-	LogBuilder add(Map<String, dynamic> map) {
+	LogBuilder add(Map<String, dynamic>? map) {
+		if (map == null) {
+			return this;
+		}
 		for (var e in map.entries) {
 			_fields[e.key] = e.value;
 		}
@@ -56,7 +65,7 @@ String messageBuilder(LogBuilder logBuilder, MessageBuilder msgBuilder, [int tra
 	);
 }
 
-void log(LogBuilder builder, [int traceOffset = 0]) {
+void blog(LogBuilder builder, [int traceOffset = 0]) {
 	final message = LogOptions.instance.builder.messageBuilder(
 		builder.level,
 		DateTime.now(),
@@ -81,7 +90,7 @@ void mlog(LgLvl level, String? msg, {
 	if (type != null) builder = builder.type(type);
 	if (e != null) builder = builder.error(e, st);
 
-	log(builder, extraTraceLineOffset + 1);
+	blog(builder, extraTraceLineOffset + 1);
 }
 
 enum LgLvl {
