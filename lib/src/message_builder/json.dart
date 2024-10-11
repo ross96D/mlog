@@ -6,115 +6,53 @@ import 'package:mlog/src/message_builder/message_builder.dart';
 import 'package:mlog/src/mlog_base.dart';
 
 class JsonMessageBuilder implements MessageBuilder {
+	LinkedHashMap<String, dynamic> mapBuilder(LgLvl level, DateTime time, LoggingFields data, [
+		int extraTraceLineOffset = 0,
+	]) {
+		// ignore: prefer_collection_literals
+		final map = LinkedHashMap<String, Object>();
 
-  @override
-  String messageBuilder(LgLvl level, Object? msg, {
-    Object? type,
-    Object? e,
-    StackTrace? st,
-    int extraTraceLineOffset = 0,
-  }) {
-    final map = mapBuilder(level, msg,
-      type: type,
-      e: e,
-      st: st,
-      extraTraceLineOffset: 0,
-    );
-    return json.encode(map);
-  }
+		map["level"] = level.name;
+		map["time"] = DateTime.now().toString();
+		final type = data.type();
+		if (type != null) {
+			map["type"] = type;
+		}
 
-  LinkedHashMap<String, dynamic> mapBuilder(LgLvl level, Object? msg, {
-    Object? type,
-    Object? e,
-    StackTrace? st,
-    int extraTraceLineOffset = 0,
-  }) {
-    // ignore: prefer_collection_literals
-    final map = LinkedHashMap<String, dynamic>();
+		if (LogOptions.instance.trace) {
+			try {
+				final (function, file, line) = parseTrace(StackTrace.current, extraTraceLineOffset: extraTraceLineOffset);
+				map["trace"] = "$function $file:$line";
+			} catch (e) {
+				map["trace"] = "parse trace error $e";
+			}
+		}
 
-    map["level"] = level.name;
-    map["time"] = DateTime.now().toString();
-    map["type"] = "$type";
+		final msg = data.message();
+		if (msg != null) {	
+			map["message"] = msg;
+		}
 
-    map["data"] = <String, dynamic>{};
-    final data = map["data"] as Map<String, dynamic>;
+		for (final (key, value) in data.extra()) {
+			switch (value.runtimeType) {
+				case num:
+					map[key] = value;
+				default:
+					map[key] = "$value";
+			}
+			if (value is num) {
+		  		map[key] = value;
+			}
+		}
+		final e = data.error();
+		if (e != null) {
+			map["error"] = e;
+		}
+		return map;
+	}
 
-    if (LogOptions.instance.trace) {
-      try {
-        final (function, file, line) = parseTrace(StackTrace.current, extraTraceLineOffset: extraTraceLineOffset);
-        data["trace"] = {
-          "function": function,
-          "file": file,
-          "line": line,
-        };
-      } catch (e) {
-        data["trace"] = "parse trace error $e";
-      }
-    }
-
-    if (msg != null) {
-      if (msg is JsonMessage) {
-        map["message"] = msg.toString();
-        data.addAll(msg.toMap());
-      } else if (msg is Map<String, dynamic>) {
-        map["message"] = _logfmt(msg);
-        data.addAll(msg);
-      } else if (msg is String) {
-        map["message"] = msg;
-      }
-      else {
-        map["message"] = "$msg";
-      }
-    }
-
-    if (e != null) {
-      data["error"] = "$e";
-    }
-
-    if (st != null) {
-      data["stacktrace"] = "$st";
-    }
-
-    return map;
-  }
-
-}
-
-String _logfmt(Map<String, dynamic> data) {
-  final builder = StringBuffer();
-
-  for (var entry in data.entries) {
-    builder.write("${entry.key}=${entry.value.toString()}");
-    builder.write(" ");
-  }
-
-  final result = builder.toString();
-  return result.substring(0, result.length - 1);
-}
-
-abstract class JsonMessage {
-
-  factory JsonMessage({required String message, required Map<String,dynamic> map}) => _ImplJsonMessage(message, map);
-
-  @override
-  String toString();
-
-  Map<String, dynamic> toMap();
-}
-
-class _ImplJsonMessage implements JsonMessage {
-  final String message;
-  final Map<String, dynamic> map;
-  
-  _ImplJsonMessage(this.message, this.map);
-  
-  @override
-  Map<String, dynamic> toMap() {
-    return map;
-  }
-
-  @override
-  String toString() {
-    return message;
-  }
+  	@override
+  	String messageBuilder(LgLvl level, DateTime time, LoggingFields data, [
+		int extraTraceLineOffset = 0,
+	]) => json.encode(mapBuilder(level, time, data));
 }

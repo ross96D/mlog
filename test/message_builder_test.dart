@@ -1,30 +1,39 @@
 import 'dart:convert';
 
 import 'package:mlog/mlog.dart';
-import 'package:test/test.dart';
+import 'package:test/test.dart' as testing;
 
 void main() {
-  group("json message builder", () {
-    test('build', () {
-      final msg = JsonMessageBuilder().messageBuilder(LgLvl.info, null);
-      final data = json.decode(msg);
-      assert(data["level"] == LgLvl.info.name);
-      assert(data["message"] == null);
+	testing.group("json message builder", () {
+		testing.test('build', () {
+			final builder = JsonMessageBuilder();
+			final msg = messageBuilder(LogBuilder(LgLvl.info).msg("test"), builder);
+			final data = json.decode(msg);
+			testing.expect(data["level"], testing.equals(LgLvl.info.name));
+			testing.expect(data["message"], testing.equals("test"));
 
-      try {
-        throw Exception("prueba");
-      } catch (e, st) {
-        final expmsg = JsonMessageBuilder().messageBuilder(LgLvl.error, null, e: e, st: st);
-        final data = json.decode(expmsg);
-        assert(data["level"] == LgLvl.error.name);
-        assert(data["message"] == null);
-        assert(data["error"] == "$e");
-      }
-    });
+			try {
+				throw Exception("prueba");
+			} catch (e, st) {
+				final expmsg = messageBuilder(
+					LogBuilder(LgLvl.error).
+						msg("error test").
+						error(e, st), 
+					builder,
+				);
+				final data = json.decode(expmsg);
+				testing.expect(data["level"], testing.equals(LgLvl.error.name));
+				testing.expect(data["message"], testing.equals("error test"));
+				testing.expect(data["error"], testing.equals("Error: $e\nStacktrace:\n$st"));
+			}
+		});
 
-    test("print", () {
-      final msg = JsonMessageBuilder().messageBuilder(LgLvl.info, {"key1": "value1", "key2": 2});
-      print(msg);
-    });
-  });
+		testing.test("print", () {
+			final logBuilder = LogBuilder(LgLvl.info).add({"key1": "value1", "key2": 2});
+			final msgBuilder = JsonMessageBuilder();
+			final msg = messageBuilder(logBuilder, msgBuilder);
+			final data = jsonDecode(msg);
+			testing.expect(data["key2"], testing.equals(2));
+		});
+	});
 }
