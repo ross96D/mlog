@@ -5,7 +5,7 @@ import 'package:mlog/src/nested_error.dart';
 
 
 class LogBuilder {
-	final Map<String, String> _fields;
+	final Map<String, Object> _fields;
 	LgLvl level;
 	LogBuilder(this.level) :_fields = {};
 
@@ -19,7 +19,7 @@ class LogBuilder {
 	}
 
 	LogBuilder set(String key, Object value) {
-		_fields[key] = "$value";
+		_fields[key] = value;
 		return this;
 	}
 
@@ -30,7 +30,7 @@ class LogBuilder {
 
 	LogBuilder add(Map<String, dynamic> map) {
 		for (var e in map.entries) {
-			_fields[e.key] = "${e.value}";
+			_fields[e.key] = e.value;
 		}
 		return this;
 	}

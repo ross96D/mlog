@@ -31,7 +31,9 @@ void main() {
 		testing.test("print", () {
 			final logBuilder = LogBuilder(LgLvl.info).add({"key1": "value1", "key2": 2});
 			final msgBuilder = JsonMessageBuilder();
-			print(messageBuilder(logBuilder, msgBuilder));
+			final msg = messageBuilder(logBuilder, msgBuilder);
+			final data = jsonDecode(msg);
+			testing.expect(data["key2"], testing.equals(2));
 		});
 	});
 }

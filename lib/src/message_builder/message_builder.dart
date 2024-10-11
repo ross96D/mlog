@@ -1,19 +1,19 @@
 import 'package:mlog/mlog.dart';
 
 class LoggingFields {
-	final Map<String, String> _data;
+	final Map<String, Object> _data;
 	LoggingFields(this._data);
 	
 	String? error() {
-		return _data["error"];
+		return _data["error"] as String?;
 	}
 	String? type() {
-		return _data["type"];
+		return _data["type"] as String?;
 	}
 	String? message() {
-		return _data["message"];
+		return _data["message"] as String?;
 	}
-	Iterable<(String key, String value)> extra() sync* {
+	Iterable<(String key, Object value)> extra() sync* {
 		for (var e in _data.entries) {
 			if (e.key != "error" && e.key != "message" && e.key != "type") {
 				yield (e.key, e.value);
