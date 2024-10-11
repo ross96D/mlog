@@ -35,7 +35,10 @@ class LogBuilder {
 		return this;
 	}
 
-	LogBuilder error(Object error, [StackTrace? st]) {
+	LogBuilder error(Object? error, [StackTrace? st]) {
+		if (error == null) {
+			return this;
+		}
 		if (error is NestedError) {
 			st = error.originalStackTrace;
 		}
