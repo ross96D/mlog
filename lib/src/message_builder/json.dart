@@ -6,8 +6,7 @@ import 'package:mlog/src/message_builder/message_builder.dart';
 import 'package:mlog/src/mlog_base.dart';
 
 class JsonMessageBuilder implements MessageBuilder {
-  	@override
-  	String messageBuilder(LgLvl level, DateTime time, LoggingFields data, [
+	LinkedHashMap<String, dynamic> mapBuilder(LgLvl level, DateTime time, LoggingFields data, [
 		int extraTraceLineOffset = 0,
 	]) {
 		// ignore: prefer_collection_literals
@@ -49,6 +48,11 @@ class JsonMessageBuilder implements MessageBuilder {
 		if (e != null) {
 			map["error"] = e;
 		}
-		return json.encode(map);
+		return map;
 	}
+
+  	@override
+  	String messageBuilder(LgLvl level, DateTime time, LoggingFields data, [
+		int extraTraceLineOffset = 0,
+	]) => json.encode(mapBuilder(level, time, data));
 }
