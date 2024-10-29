@@ -1,58 +1,67 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:mlog/mlog.dart';
 import 'package:mlog/src/common/utils.dart';
-import 'package:mlog/src/message_builder/message_builder.dart';
 import 'package:mlog/src/mlog_base.dart';
 
 class JsonMessageBuilder implements MessageBuilder {
-	LinkedHashMap<String, dynamic> mapBuilder(LgLvl level, DateTime time, LoggingFields data, [
-		int extraTraceLineOffset = 0,
-	]) {
+
+	@override
+	String buildMessage(LogBuilder builder) => json.encode(buildMap(builder));
+
+	LinkedHashMap<String, dynamic> buildMap(LogBuilder builder) {
 		// ignore: prefer_collection_literals
 		final map = LinkedHashMap<String, Object>();
 
-		map["level"] = level.name;
-		map["time"] = DateTime.now().toString();
-		final type = data.type();
+		map["level"] = builder.level.name;
+		map["time"] = builder.time ?? DateTime.now().toString();
+		final type = builder.type;
 		if (type != null) {
 			map["type"] = type;
+		}
+		final msg = builder.message;
+		if (msg != null) {
+			map["message"] = msg;
+		}
+		final e = builder.error;
+		if (e != null) {
+			map["error"] = _errorToGrafanaStandardString(e, builder.stackTrace);
 		}
 
 		if (LogOptions.instance.trace) {
 			try {
-				final (function, file, line) = parseTrace(StackTrace.current, extraTraceLineOffset: extraTraceLineOffset);
+				final (function, file, line) = parseTrace(StackTrace.current,
+					extraTraceLineOffset: builder.extraTraceLineOffset,
+				);
 				map["trace"] = "$function $file:$line";
 			} catch (e) {
 				map["trace"] = "parse trace error $e";
 			}
 		}
 
-		final msg = data.message();
-		if (msg != null) {	
-			map["message"] = msg;
+		if (builder.extra!=null) {
+			for (final entry in builder.extra!.entries) {
+				if (entry.value is num) {
+					map[entry.key] = entry.value;
+				} else {
+					map[entry.key] = entry.value.toString();
+				}
+			}
 		}
 
-		for (final (key, value) in data.extra()) {
-			switch (value.runtimeType) {
-				case num:
-					map[key] = value;
-				default:
-					map[key] = "$value";
-			}
-			if (value is num) {
-		  		map[key] = value;
-			}
-		}
-		final e = data.error();
-		if (e != null) {
-			map["error"] = e;
-		}
 		return map;
 	}
 
-  	@override
-  	String messageBuilder(LgLvl level, DateTime time, LoggingFields data, [
-		int extraTraceLineOffset = 0,
-	]) => json.encode(mapBuilder(level, time, data));
+	static String _errorToGrafanaStandardString(Object error, [StackTrace? st]) {
+		var result = "Error: $error";
+		if (error is NestedError) {
+			st = error.originalStackTrace;
+		}
+		if (st!=null) {
+			result += "\nStacktrace:\n$st";
+		}
+		return result;
+	}
+
 }

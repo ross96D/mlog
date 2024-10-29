@@ -13,8 +13,9 @@ void main() {
 	test('First Test', overridePrint(seed, () {
 		final random = Random(seed);
 
-		LogOptions.instance.builder = JsonMessageBuilder();
+		LogOptions.instance.messageBuilder = JsonMessageBuilder();
 		for (var i = 0; i < 20000; i++) {
+			final before = loggings;
 			LgLvl level = LgLvl.fine; 
 			switch (random.nextInt(5)) {
 				case 0:
@@ -31,17 +32,22 @@ void main() {
 			final msg = getRandomString(random, 50);
 			final type = getRandomString(random, 12);
 			final num = random.nextInt(10000);
-			blog(LogBuilder(level).
-				msg(msg).
-				type(type).
-				add({"num": num})
+			final builder = LogBuilder(
+				level: level,
+				message: msg,
+				type: type,
+				extra: {"num": num},
 			);
-			final logged = jsonDecode(loggings);
-
-			expect(logged["level"], equals(level.name));
-			expect(logged["message"], equals(msg));
-			expect(logged["type"], equals(type));
-			expect(logged["num"], equals(num));
+			builder.log();
+			if (!builder.shouldLog) {
+				expect(loggings, equals(before));
+			} else {
+				final logged = jsonDecode(loggings);
+				expect(logged["level"], equals(level.name));
+				expect(logged["message"], equals(msg));
+				expect(logged["type"], equals(type));
+				expect(logged["num"], equals(num));
+			}
 		}
 	}));
 }

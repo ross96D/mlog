@@ -1,97 +1,84 @@
 import 'package:mlog/src/common/colors.dart';
-import 'package:mlog/src/message_builder/message_builder.dart';
 import 'package:mlog/src/message_builder/readable.dart';
-import 'package:mlog/src/nested_error.dart';
 
 
-class LogBuilder {
-	final Map<String, Object> _fields;
-	LgLvl level;
-	LogBuilder(this.level) :_fields = {};
 
-	factory LogBuilder.msg(LgLvl level, String msg) {
-		return LogBuilder(level).msg(msg);
-	}
-
-	LogBuilder msg(String? msg) {
-		if (msg == null) {
-			return this;
-		}
-		_fields["message"] = msg;
-		return this;
-	}
-
-	LogBuilder set(String key, Object value) {
-		_fields[key] = value;
-		return this;
-	}
-
-	LogBuilder type(Object? type) {
-		if (type == null) {
-			return this;
-		}
-		_fields["type"] = "$type";
-		return this;
-	}
-
-	LogBuilder add(Map<String, dynamic>? map) {
-		if (map == null) {
-			return this;
-		}
-		for (var e in map.entries) {
-			_fields[e.key] = e.value;
-		}
-		return this;
-	}
-
-	LogBuilder error(Object? error, [StackTrace? st]) {
-		if (error == null) {
-			return this;
-		}
-		if (error is NestedError) {
-			st = error.originalStackTrace;
-		}
-		_fields["error"] = "Error: $error\nStacktrace:\n$st";
-		return this;
-	}
-}
-
-String messageBuilder(LogBuilder logBuilder, MessageBuilder msgBuilder, [int traceOffset = 0]) {
-	return msgBuilder.messageBuilder(
-		logBuilder.level,
-		DateTime.now(),
-		LoggingFields(logBuilder._fields),
-		traceOffset + 1,
-	);
-}
-
-void blog(LogBuilder builder, [int traceOffset = 0]) {
-	final message = LogOptions.instance.builder.messageBuilder(
-		builder.level,
-		DateTime.now(),
-		LoggingFields(builder._fields),
-		traceOffset + 1,
-	);
-	print(message); // ignore: avoid_print
-}
-
-
+@deprecated
 void mlog(LgLvl level, String? msg, {
 	Object? type,
 	Object? e,
 	StackTrace? st,
 	int extraTraceLineOffset = 0,
 }) {
-	if (level.value > LogOptions.instance.getLvlForType(type).value) {
-		return;
-	}
-	var builder = LogBuilder(level);
-	if (msg != null) builder = builder.msg(msg);
-	if (type != null) builder = builder.type(type);
-	if (e != null) builder = builder.error(e, st);
-
-	blog(builder, extraTraceLineOffset + 1);
+	LogBuilder(
+		level: level,
+		message: msg,
+		type: type,
+		error: e,
+		stackTrace: st,
+		extraTraceLineOffset: extraTraceLineOffset,
+	).log();
 }
+
+
+
+class LogBuilder {
+
+	LgLvl level;
+	Object? type;
+	DateTime? time;
+	String? message;
+	Object? error;
+	StackTrace? stackTrace;
+	int extraTraceLineOffset;
+	Map<String, Object>? extra;
+	MessageBuilder? messageBuilder;
+
+	LogBuilder({
+		required this.level,
+		this.message,
+		this.type,
+		this.time,
+		this.error,
+		this.stackTrace,
+		this.extraTraceLineOffset = 0,
+		this.extra,
+		this.messageBuilder,
+	});
+
+	void setExtra(String key, Object value) {
+		extra ??= {};
+		extra![key] = value;
+	}
+	void addAllExtra(Map<String, Object> map) {
+		extra ??= {};
+		extra!.addAll(map);
+	}
+
+	bool get shouldLog => level.value > LogOptions.instance.getLvlForType(type).value;
+
+	void log() {
+		if (!shouldLog) return;
+		final message = buildMessage();
+		print(message); // ignore: avoid_print
+	}
+
+	String buildMessage() {
+		assert(stackTrace==null || error!=null,
+				"StackTrace provided, but no Error provided, this doesn't make sense.");
+		final messageBuilder = this.messageBuilder ?? LogOptions.instance.messageBuilder;
+		return messageBuilder.buildMessage(this);
+	}
+
+}
+
+
+
+abstract class MessageBuilder {
+	String buildMessage(LogBuilder builder);
+}
+
+
 
 enum LgLvl {
 	error   (0, 'error',    '[E]'),
@@ -128,6 +115,7 @@ enum LgLvl {
 		LgLvl.no => throw Exception('LgLvl.no is never meant to be painted'),
 	};
 }
+
 
 
 class LogOptions {
@@ -181,7 +169,7 @@ class LogOptions {
 		});
 	}
 
-	MessageBuilder builder = ReadableMessageBuilder();
+	MessageBuilder messageBuilder = ReadableMessageBuilder();
 
 	LgLvl getLvlForType(Object? type) {
 		return types[type] ?? level;
