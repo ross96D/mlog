@@ -12,7 +12,7 @@ class JsonMessageBuilder implements MessageBuilder {
 
 	LinkedHashMap<String, dynamic> buildMap(LogBuilder builder) {
 		// ignore: prefer_collection_literals
-		final map = LinkedHashMap<String, Object>();
+		final map = LinkedHashMap<String, dynamic>();
 
 		map["level"] = builder.level.name;
 		map["time"] = builder.time ?? DateTime.now().toString();

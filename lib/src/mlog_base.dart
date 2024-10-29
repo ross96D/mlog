@@ -31,7 +31,7 @@ class LogBuilder {
 	Object? error;
 	StackTrace? stackTrace;
 	int extraTraceLineOffset;
-	Map<String, Object>? extra;
+	Map<String, dynamic>? extra;
 	MessageBuilder? messageBuilder;
 
 	LogBuilder({
@@ -50,7 +50,7 @@ class LogBuilder {
 		extra ??= {};
 		extra![key] = value;
 	}
-	void addAllExtra(Map<String, Object> map) {
+	void addAllExtra(Map<String, dynamic> map) {
 		extra ??= {};
 		extra!.addAll(map);
 	}
