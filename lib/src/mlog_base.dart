@@ -55,7 +55,7 @@ class LogBuilder {
 		extra!.addAll(map);
 	}
 
-	bool get shouldLog => level.value > LogOptions.instance.getLvlForType(type).value;
+	bool get shouldLog => level.value <= LogOptions.instance.getLvlForType(type).value;
 
 	void log() {
 		if (!shouldLog) return;
