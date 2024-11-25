@@ -15,10 +15,10 @@ class JsonMessageBuilder implements MessageBuilder {
 		final map = LinkedHashMap<String, dynamic>();
 
 		map["level"] = builder.level.name;
-		map["time"] = builder.time ?? DateTime.now().toString();
+		map["time"] = (builder.time ?? DateTime.now()).toString();
 		final type = builder.type;
 		if (type != null) {
-			map["type"] = type;
+			map["type"] = type.toString();
 		}
 		final msg = builder.message;
 		if (msg != null) {
