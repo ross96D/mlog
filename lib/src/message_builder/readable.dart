@@ -1,3 +1,4 @@
+import 'package:mlog/mlog.dart';
 import 'package:mlog/src/common/colors.dart';
 import 'package:mlog/src/mlog_base.dart';
 import 'package:mlog/src/common/utils.dart';
@@ -36,6 +37,13 @@ class ReadableMessageBuilder implements MessageBuilder {
 		final e = builder.error;
 		if (e != null) {
 			messageBuffer.write(color.paint("\n$e"));
+		}
+		var st = builder.stackTrace;
+		if (e is NestedError) {
+			st = e.originalStackTrace;
+		}
+		if (st != null) {
+			messageBuffer.write("\n$e");
 		}
 		String message = messageBuffer.toString();
 		bool isFirstLine = true;
