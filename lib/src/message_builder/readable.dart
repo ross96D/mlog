@@ -43,7 +43,7 @@ class ReadableMessageBuilder implements MessageBuilder {
 			st = e.originalStackTrace;
 		}
 		if (st != null) {
-			messageBuffer.write("\n$e");
+			messageBuffer.write("\n$st");
 		}
 		String message = messageBuffer.toString();
 		bool isFirstLine = true;
