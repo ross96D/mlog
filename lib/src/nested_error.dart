@@ -2,8 +2,8 @@
 
 class NestedError extends Error {
 	final String msg;
-	final Object previousError;
-	final StackTrace previousStackTrace;
+	final Object? previousError;
+	final StackTrace? previousStackTrace;
 
 	NestedError(this.previousError, this.previousStackTrace, this.msg);
 
@@ -11,7 +11,7 @@ class NestedError extends Error {
 		return '$msg\n$previousError';
 	}
 
-	StackTrace get originalStackTrace {
+	StackTrace? get originalStackTrace {
 		final previousError = this.previousError;
 		if (previousError is NestedError) {
 			return previousError.originalStackTrace;
@@ -27,8 +27,8 @@ extension OriginalError on Object {
 
 	Object get originalError {
 		final currentError = this;
-		if (currentError is NestedError) {
-			return currentError.previousError.originalError;
+		if (currentError is NestedError && currentError.previousError != null) {
+			return currentError.previousError!.originalError;
 		} else {
 			return currentError;
 		}
