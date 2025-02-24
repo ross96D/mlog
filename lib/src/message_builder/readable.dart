@@ -19,7 +19,8 @@ class ReadableMessageBuilder implements MessageBuilder {
 		}
 
 		final time = builder.time ?? DateTime.now();
-		header += ' $time';
+
+		header += ' ${time.toRFC3339()}';
 		messageBuffer.write(color.paint(header));
 		if (LogOptions.instance.trace) {
 			try {

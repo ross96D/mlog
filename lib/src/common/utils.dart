@@ -31,3 +31,19 @@ String _getFunctionNameFromFrame(String frame) {
 	subStr = subStr.substring(0, indexOfWhiteSpace);
 	return subStr;
 }
+
+extension RFC3339 on DateTime {
+  String toRFC3339() {
+    if (isUtc) {
+      return toIso8601String();
+    }
+    final offset = timeZoneOffset;
+    var timeOffset = "";
+    if (offset.isNegative) {
+      timeOffset = "${offset.inHours}:00";
+    } else {
+      timeOffset = "+${offset.inHours}:00";
+    }
+    return toIso8601String() + timeOffset;
+  }
+}
