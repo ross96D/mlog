@@ -39,10 +39,19 @@ extension RFC3339 on DateTime {
     }
     final offset = timeZoneOffset;
     var timeOffset = "";
+
+    String pad(int hours) {
+      if (hours >= 10) {
+        return hours.toString();
+      } else {
+        return "0$hours";
+      }
+    }
+
     if (offset.isNegative) {
-      timeOffset = "${offset.inHours}:00";
+      timeOffset = "${pad(offset.inHours)}:00";
     } else {
-      timeOffset = "+${offset.inHours}:00";
+      timeOffset = "+${pad(offset.inHours)}:00";
     }
     return toIso8601String() + timeOffset;
   }
