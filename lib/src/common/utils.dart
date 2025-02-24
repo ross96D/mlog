@@ -43,8 +43,12 @@ extension RFC3339 on DateTime {
     String pad(int hours) {
       if (hours >= 10) {
         return hours.toString();
-      } else {
+      } else if (hours <= -10){
+        return hours.toString();
+      } else if (hours > 0) {
         return "0$hours";
+      } else {
+        return "-0${hours * - 1}";
       }
     }
 
