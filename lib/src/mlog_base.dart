@@ -3,7 +3,6 @@ import 'package:mlog/src/message_builder/readable.dart';
 
 
 
-@deprecated
 void mlog(LgLvl level, String? msg, {
 	Object? type,
 	Object? e,
